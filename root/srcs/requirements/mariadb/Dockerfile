@@ -5,7 +5,7 @@ FROM debian:bookworm
 
 # install mariadb server
 RUN apt update && apt upgrade -y && \
-    apt install -y mariadb-server && \
+    apt install --no-install-recommends --no-install-suggests -y mariadb-server && \
     apt clean && rm -rf /var/lib/apt/lists/*    
     # clean apt cache to reduce image size
 
