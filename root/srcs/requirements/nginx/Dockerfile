@@ -12,16 +12,8 @@ RUN		apt update && apt install -y --no-install-recommends --no-install-suggests 
 		apt clean && rm -rf /var/lib/apt/lists/*
         # clean apt cache to reduce image size
 
-# set variables for ssl certificate generation (to be set later on an .env file)
-ARG	CERT_FOLDER=/etc/nginx/certs/
-ARG	CERTIFICATE=/etc/nginx/certs/certificate.crt
-ARG	KEY=/etc/nginx/certs/certificate.key
-ARG	COUNTRY=PT
-ARG	STATE=Porto
-ARG	LOCALITY=Porto
-ARG	ORGANIZATION=42
-ARG	UNIT=42
-ARG	COMMON_NAME=login.42.fr
+# set variables for the ssl certificate generation (from .env file)		
+ARG	CERT_FOLDER CERTIFICATE KEY COUNTRY STATE LOCALITY ORGANIZATION UNIT COMMON_NAME
 
 # create the folder for the ssl certificates and generate them
 RUN	mkdir -p ${CERT_FOLDER} && \

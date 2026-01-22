@@ -3,12 +3,6 @@
 # Start MariaDB
 service mariadb start
 
-# REMOVE THIS LATER AFTER HAVING A PROPER .ENV FILE
-DB_NAME=thedatabase
-DB_USER=theuser
-DB_PASSWORD=abc
-DB_PASS_ROOT=123
-
 # Create the database and users with appropriate privileges
 mariadb -v -u root << EOF
 CREATE DATABASE IF NOT EXISTS $DB_NAME;
