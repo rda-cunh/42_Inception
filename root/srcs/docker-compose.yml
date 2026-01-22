@@ -1,6 +1,91 @@
-version: "1.0"
+version: "3.8"
 
 services:
+  # mariaDB database service  
+  # this the only container that do not depend on others and is the first to be built and start
   mariadb:
-    build: requirements/mariadb/.
     container_name: mariadb
+    build: ./requirements/mariadb/
+    volumes:
+      - database:/var/lib/mysql    
+    networks:
+      - all
+    init: true
+    restart: on-failure
+    env_file:
+      - .env
+
+  # wordpress service
+  # this is the second container to be built as it depends on mariadb
+  wordpress:
+    container_name: wordpress
+    build: ./requirements/wordpress/
+    volumes:
+      - wordpress_files:/var/www/inception/
+    depends_on:
+      - mariadb
+    networks:
+      - all
+    init: true
+    restart: on-failure
+    env_file:
+      - .env
+ 
+  # nginx service
+  # this is the last container to be built as it depends on wordpress
+  # it use args to pass the certificate and key path to the Dockerfile
+  # private information will be stored in .env file
+  nginx:
+    container_name: nginx
+    build:
+      context: ./requirements/nginx/
+      args:
+        CERT_FOLDER: ${CERT_FOLDER}
+        CERTIFICATE: ${CERTIFICATE}
+        KEY: ${KEY}
+        COUNTRY: ${COUNTRY}
+        STATE: ${STATE}
+        LOCALITY: ${LOCALITY}
+        ORGANIZATION: ${ORGANIZATION}
+        UNIT: ${UNIT}
+        COMMON_NAME: ${COMMON_NAME}
+    ports:
+      - '443:443'
+    volumes:
+      - wordpress_files:/var/www/inception/
+    depends_on:
+      - wordpress
+    networks:
+      - all
+    init: true
+    restart: on-failure
+    env_file:
+      - .env
+
+  # volumes keep the data persistent even if the containers are destroyed
+  # they are binded to host machine folders for easier access and backup
+  # device: where the data is stored on the host machine
+  volumes:
+
+    # keeps the database data persistent
+    database:
+      driver: local
+      driver_opts:
+        type: none
+        o: bind
+        device: ~/data/database
+
+    # keeps the wordpress files persistent
+    wordpress_files:
+      driver: local
+      driver_opts:
+        type: none
+        o: bind
+        device: ~/data/wordpress_files
+
+  # network to allow communication between containers
+  # all is the name of the network
+  # bridge is the type of network
+  networks:
+    all:
+      driver: bridge       
