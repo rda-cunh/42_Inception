@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # mariaDB database service  
   # this the only container that do not depend on others and is the first to be built and start
@@ -62,30 +60,30 @@ services:
     env_file:
       - .env
 
-  # volumes keep the data persistent even if the containers are destroyed
-  # they are binded to host machine folders for easier access and backup
-  # device: where the data is stored on the host machine
-  volumes:
+# volumes keep the data persistent even if the containers are destroyed
+# they are binded to host machine folders for easier access and backup
+# device: where the data is stored on the host machine
+volumes:
 
-    # keeps the database data persistent
-    database:
-      driver: local
-      driver_opts:
-        type: none
-        o: bind
-        device: ~/data/database
+  # keeps the database data persistent
+  database:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/data/database
 
-    # keeps the wordpress files persistent
-    wordpress_files:
-      driver: local
-      driver_opts:
-        type: none
-        o: bind
-        device: ~/data/wordpress_files
+  # keeps the wordpress files persistent
+  wordpress_files:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/data/wordpress_files
 
-  # network to allow communication between containers
-  # all is the name of the network
-  # bridge is the type of network
-  networks:
-    all:
-      driver: bridge       
+# network to allow communication between containers
+# all is the name of the network
+# bridge is the type of network
+networks:
+  all:
+    driver: bridge       
