@@ -25,8 +25,9 @@ RUN		service php8.2-fpm stop
 # copy the custom php configuration files into the container
 COPY	conf/www.conf ${PHPPATH}/pool.d/
 
+# adjust php-fpm configuration to improve security and run in foreground
 RUN		sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' ${PHPPATH}/php.ini && \
-		sed -i "s/listen = \/run\/php\/php$PHP_VERSION_ENV-fpm.sock/listen = 9000/g" ${PHPPATH}/pool.d/www.conf && \
+		sed -i "s/listen = \/run\/php\/php8.2-fpm.sock/listen = 9000/g" ${PHPPATH}/pool.d/www.conf && \
 		sed -i 's/;listen.mode = 0660/listen.mode = 0660/g' ${PHPPATH}/pool.d/www.conf && \
 		sed -i 's/;daemonize = yes/daemonize = no/g' ${PHPPATH}/pool.d/www.conf
 
