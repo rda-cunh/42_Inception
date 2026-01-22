@@ -6,21 +6,21 @@ FROM debian:bookworm
 EXPOSE 9000
 
 # set a variable to use the php path in the dockerfile
-ARG		PHPPATH=/etc/php/8.1/fpm
+ARG		PHPPATH=/etc/php/8.2/fpm
 
 # install php-fpm and the php-mysql extension
 RUN		apt update && apt upgrade -y && \
         apt install --no-install-recommends --no-install-suggests -y \
 		ca-certificates \
-		php8.1-fpm \
-		php8.1-mysql \
+		php8.2-fpm \
+		php8.2-mysql \
 		wget \
 		tar && \
 		apt clean && rm -rf /var/lib/apt/lists/*
         # clean apt cache to reduce image size
 
 # After the php installation we need to stop it to change the configuration files
-RUN		service php8.1-fpm stop
+RUN		service php8.2-fpm stop
 
 # copy the custom php configuration files into the container
 COPY	conf/www.conf ${PHPPATH}/pool.d/
@@ -50,4 +50,4 @@ COPY	tools/setup.sh /bin/
 RUN		chmod +x /bin/setup.sh
 
 # execute the setup script then start the php server / --nodaemonize option to avoid php-fpm to run in background
-CMD	["setup.sh", "php-fpm8.1", "--nodaemonize"]
+CMD	["setup.sh", "php-fpm8.2", "--nodaemonize"]
