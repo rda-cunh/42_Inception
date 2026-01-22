@@ -6,7 +6,7 @@
 #    By: rda-cunh <rda-cunh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/20 19:38:56 by rda-cunh          #+#    #+#              #
-#    Updated: 2026/01/22 21:04:50 by rda-cunh         ###   ########.fr        #
+#    Updated: 2026/01/22 21:10:47 by rda-cunh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,6 +30,13 @@ down:
 	@docker compose -p $(NAME) down
 	@echo " $(DOWN)"
 
+create_dir:
+	@mkdir -p ~/data/database
+	@mkdir -p ~/data/wordpress_files
+
+# creates a backup of the data folder in the home directory
+backup:
+	@if [ -d ~/data ]; then sudo tar -czvf ~/data.tar.gz -C ~/ data/ > $(HIDE) && echo " $(BKP)" ; fi
 
 # stop the containers, remove the volumes and remove the containers
 clean:
@@ -58,4 +65,58 @@ status:
 	@docker network ls --filter "name=$(NAME)_all"
 	@echo ""
 
-.PHONY: all up down clean fclean status
+# remove all containers, images, volumes and networks to start with a clean state
+prepare:
+	@echo "\nPreparing to start with a clean state..."
+	@echo "\nCONTAINERS STOPPED\n"
+	@if [ -n "$$(docker ps -qa)" ]; then docker stop $$(docker ps -qa) ;	fi
+	@echo "\nCONTAINERS REMOVED\n"
+	@if [ -n "$$(docker ps -qa)" ]; then docker rm $$(docker ps -qa) ; fi
+	@echo "\nIMAGES REMOVED\n"
+	@if [ -n "$$(docker images -qa)" ]; then docker rmi -f $$(docker images -qa) ; fi
+	@echo "\nVOLUMES REMOVED\n"
+	@if [ -n "$$(docker volume ls -q)" ]; then docker volume rm $$(docker volume ls -q) ; fi
+	@echo "\nNETWORKS REMOVED\n"
+	@if [ -n "$$(docker network ls -q) " ]; then docker network rm $$(docker network ls -q) 2> /dev/null || true ; fi 
+	@echo ""
+
+re: fclean all
+
+# Customs ----------------------------------------------------------------------
+
+HIDE		= /dev/null 2>&1
+
+RED			= \033[0;31m
+GREEN		= \033[0;32m
+RESET		= \033[0m
+
+MARK		= $(GREEN)✔$(RESET)
+ADDED		= $(GREEN)Added$(RESET)
+REMOVED		= $(GREEN)Removed$(RESET)
+STARTED		= $(GREEN)Started$(RESET)
+STOPPED		= $(GREEN)Stopped$(RESET)
+CREATED		= $(GREEN)Created$(RESET)
+EXECUTED	= $(GREEN)Executed$(RESET)
+
+# Messages --------------------------------------------------------------------
+
+UP			= $(MARK) $(NAME)		$(EXECUTED)
+DOWN		= $(MARK) $(NAME)		$(STOPPED)
+FAIL		= $(RED)✔$(RESET) $(NAME)		$(RED)Failed$(RESET)
+
+HOST_ADD	= $(MARK) Host $(HOST_URL)		$(ADDED)
+HOST_RM		= $(MARK) Host $(HOST_URL)		$(REMOVED)
+
+NX_CLN		= $(MARK) Container nginx		$(REMOVED)
+WP_CLN		= $(MARK) Container wordpress		$(REMOVED)
+DB_CLN		= $(MARK) Container mariadb		$(REMOVED)
+
+NX_FLN		= $(MARK) Image $(NAME)-nginx	$(REMOVED)
+WP_FLN		= $(MARK) Image $(NAME)-wordpress	$(REMOVED)
+DB_FLN		= $(MARK) Image $(NAME)-mariadb	$(REMOVED)
+
+BKP			= $(MARK) Backup at $(HOME)	$(CREATED)
+
+# Phony -----------------------------------------------------------------------
+
+.PHONY: all up down create_dir clean fclean status backup prepare re
