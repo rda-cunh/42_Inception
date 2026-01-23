@@ -3,11 +3,15 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: rda-cunh <rda-cunh@student.42.fr>          +#+  +:+       +#+         #
+#    By: rda-cunh <rda-cunh@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/20 19:38:56 by rda-cunh          #+#    #+#              #
-#    Updated: 2026/01/22 21:10:47 by rda-cunh         ###   ########.fr        #
+#    Updated: 2026/01/23 00:42:27 by rda-cunh         ###   ########.fr        #
 #                                                                              #
+# **************************************************************************** #
+
+# **************************************************************************** #
+#                                   VARIABLES                                  #
 # **************************************************************************** #
 
 NAME		= inception
@@ -15,108 +19,87 @@ SRCS		= ./srcs
 COMPOSE		= $(SRCS)/docker-compose.yml
 HOST_URL	= rda-cunh.42.fr
 
-all: $(NAME)
 
-$(NAME): up
+# **************************************************************************** #
+#                                     RULES                                    #
+# **************************************************************************** #
 
-# puts the url in the host files and starts the containers trough docker compose
-up: create_dir
-	@sudo hostsed add 127.0.0.1 $(HOST_URL) > $(HIDE) && echo " $(HOST_ADD)"
-	@docker compose -p $(NAME) -f $(COMPOSE) up --build || (echo " $(FAIL)" && exit 1)
-	@echo " $(UP)"
+# default target
+all: up
 
-# stops the containers through docker compose
+# create dirs, add host, build and start containers
+up: create_dirs add_host
+	@echo "Building and starting containers..."
+	@docker compose -f $(COMPOSE) -p $(NAME) up --build -d
+	@echo "✓ Inception is running at https://$(HOST_URL)"
+
+# stop all containers
 down:
-	@docker compose -p $(NAME) down
-	@echo " $(DOWN)"
+	@echo "Stopping containers..."
+	@docker compose -f $(COMPOSE) -p $(NAME) down
+	@echo "✓ Containers stopped"
 
-create_dir:
-	@mkdir -p ~/data/database
-	@mkdir -p ~/data/wordpress_files
+# start existing containers without rebuilding
+start:
+	@docker compose -f $(COMPOSE) -p $(NAME) start
+	@echo "✓ Containers started"
 
-# creates a backup of the data folder in the home directory
-backup:
-	@if [ -d ~/data ]; then sudo tar -czvf ~/data.tar.gz -C ~/ data/ > $(HIDE) && echo " $(BKP)" ; fi
+# stop containers without removing them
+stop:
+	@docker compose -f $(COMPOSE) -p $(NAME) stop
+	@echo "✓ Containers stopped"
 
-# stop the containers, remove the volumes and remove the containers
-clean:
-	@docker compose -f $(COMPOSE) down -v
-	@if [ -n "$$(docker ps -a --filter "name=nginx" -q)" ]; then docker rm -f nginx > $(HIDE) && echo " $(NX_CLN)" ; fi
-	@if [ -n "$$(docker ps -a --filter "name=wordpress" -q)" ]; then docker rm -f wordpress > $(HIDE) && echo " $(WP_CLN)" ; fi
-	@if [ -n "$$(docker ps -a --filter "name=mariadb" -q)" ]; then docker rm -f mariadb > $(HIDE) && echo " $(DB_CLN)" ; fi
+# restart the infrastructure (down + up)
+restart: down up
 
-# backups the data and removes the containers, images and the host url from the host file
-fclean: clean backup
-	@sudo rm -rf ~/data
-	@if [ -n "$$(docker image ls $(NAME)-nginx -q)" ]; then docker image rm -f $(NAME)-nginx > $(HIDE) && echo " $(NX_FLN)" ; fi
-	@if [ -n "$$(docker image ls $(NAME)-wordpress -q)" ]; then docker image rm -f $(NAME)-wordpress > $(HIDE) && echo " $(WP_FLN)" ; fi
-	@if [ -n "$$(docker image ls $(NAME)-mariadb -q)" ]; then docker image rm -f $(NAME)-mariadb > $(HIDE) && echo " $(DB_FLN)" ; fi
-	@sudo hostsed rm 127.0.0.1 $(HOST_URL) > $(HIDE) && echo " $(HOST_RM)"
+# create data directories for persistent volumes
+create_dirs:
+	@mkdir -p $(DATA_PATH)/database
+	@mkdir -p $(DATA_PATH)/wordpress_files
+	@echo "✓ Data directories created"
 
-status:
-	@clear
-	@echo "\nCONTAINERS\n"
-	@docker ps -a
-	@echo "\nIMAGES\n"
-	@docker image ls
-	@echo "\nVOLUMES\n"
-	@docker volume ls
-	@echo "\nNETWORKS\n"
-	@docker network ls --filter "name=$(NAME)_all"
-	@echo ""
+# add domain to /etc/hosts if not already present
+add_host:
+	@if ! grep -q "$(HOST_URL)" /etc/hosts; then \
+		echo "127.0.0.1 $(HOST_URL)" | sudo tee -a /etc/hosts > /dev/null; \
+		echo "✓ Host entry added"; \
+	fi
 
-# remove all containers, images, volumes and networks to start with a clean state
-prepare:
-	@echo "\nPreparing to start with a clean state..."
-	@echo "\nCONTAINERS STOPPED\n"
-	@if [ -n "$$(docker ps -qa)" ]; then docker stop $$(docker ps -qa) ;	fi
-	@echo "\nCONTAINERS REMOVED\n"
-	@if [ -n "$$(docker ps -qa)" ]; then docker rm $$(docker ps -qa) ; fi
-	@echo "\nIMAGES REMOVED\n"
-	@if [ -n "$$(docker images -qa)" ]; then docker rmi -f $$(docker images -qa) ; fi
-	@echo "\nVOLUMES REMOVED\n"
-	@if [ -n "$$(docker volume ls -q)" ]; then docker volume rm $$(docker volume ls -q) ; fi
-	@echo "\nNETWORKS REMOVED\n"
-	@if [ -n "$$(docker network ls -q) " ]; then docker network rm $$(docker network ls -q) 2> /dev/null || true ; fi 
-	@echo ""
+# remove domain from /etc/hosts
+remove_host:
+	@sudo sed -i "/$(HOST_URL)/d" /etc/hosts
+	@echo "✓ Host entry removed"
 
+# stop containers and remove volumes
+clean: down
+	@echo "Removing containers and volumes..."
+	@docker compose -f $(COMPOSE) -p $(NAME) down -v
+	@echo "✓ Cleanup complete"
+
+# complete cleanup: remove images, volumes, data, and host entry
+fclean: clean remove_host
+	@echo "Removing images and data..."
+	@docker system prune -af --volumes
+	@sudo rm -rf $(DATA_PATH)
+	@echo "✓ Full cleanup complete"
+
+# rebuild everything from scratch (fclean + all)
 re: fclean all
 
-# Customs ----------------------------------------------------------------------
+# display status of all Docker resources
+status:
+	@echo "\n=== CONTAINERS ==="
+	@docker ps -a --filter "name=$(NAME)"
+	@echo "\n=== IMAGES ==="
+	@docker images | grep $(NAME)
+	@echo "\n=== VOLUMES ==="
+	@docker volume ls | grep $(NAME)
+	@echo "\n=== NETWORKS ==="
+	@docker network ls | grep $(NAME)
 
-HIDE		= /dev/null 2>&1
+# follow container logs in real-time
+logs:
+	@docker compose -f $(COMPOSE) -p $(NAME) logs -f
 
-RED			= \033[0;31m
-GREEN		= \033[0;32m
-RESET		= \033[0m
-
-MARK		= $(GREEN)✔$(RESET)
-ADDED		= $(GREEN)Added$(RESET)
-REMOVED		= $(GREEN)Removed$(RESET)
-STARTED		= $(GREEN)Started$(RESET)
-STOPPED		= $(GREEN)Stopped$(RESET)
-CREATED		= $(GREEN)Created$(RESET)
-EXECUTED	= $(GREEN)Executed$(RESET)
-
-# Messages --------------------------------------------------------------------
-
-UP			= $(MARK) $(NAME)		$(EXECUTED)
-DOWN		= $(MARK) $(NAME)		$(STOPPED)
-FAIL		= $(RED)✔$(RESET) $(NAME)		$(RED)Failed$(RESET)
-
-HOST_ADD	= $(MARK) Host $(HOST_URL)		$(ADDED)
-HOST_RM		= $(MARK) Host $(HOST_URL)		$(REMOVED)
-
-NX_CLN		= $(MARK) Container nginx		$(REMOVED)
-WP_CLN		= $(MARK) Container wordpress		$(REMOVED)
-DB_CLN		= $(MARK) Container mariadb		$(REMOVED)
-
-NX_FLN		= $(MARK) Image $(NAME)-nginx	$(REMOVED)
-WP_FLN		= $(MARK) Image $(NAME)-wordpress	$(REMOVED)
-DB_FLN		= $(MARK) Image $(NAME)-mariadb	$(REMOVED)
-
-BKP			= $(MARK) Backup at $(HOME)	$(CREATED)
-
-# Phony -----------------------------------------------------------------------
-
-.PHONY: all up down create_dir clean fclean status backup prepare re
+.PHONY: all up down start stop restart create_dirs add_host remove_host \
+        clean fclean re status logs
