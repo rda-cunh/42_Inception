@@ -6,7 +6,7 @@
 #    By: rda-cunh <rda-cunh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/20 19:38:56 by rda-cunh          #+#    #+#              #
-#    Updated: 2026/01/23 20:19:21 by rda-cunh         ###   ########.fr        #
+#    Updated: 2026/01/23 20:41:32 by rda-cunh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -89,7 +89,7 @@ re: fclean all
 # display status of all Docker resources
 status:
 	@echo "\n=== CONTAINERS ==="
-	@docker ps -a --filter "name=$(NAME)"
+	@docker compose -f $(COMPOSE) -p $(NAME) ps -a
 	@echo "\n=== IMAGES ==="
 	@docker images | grep $(NAME)
 	@echo "\n=== VOLUMES ==="
@@ -99,7 +99,7 @@ status:
 
 # follow container logs in real-time
 logs:
-	@docker compose -f $(COMPOSE) -p $(NAME) logs -f
+	@docker compose -f $(COMPOSE) -p $(NAME) logs -f #tail="100"
 
 .PHONY: all up down start stop restart create_dirs add_host remove_host \
         clean fclean re status logs
