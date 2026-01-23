@@ -61,8 +61,6 @@ make restart
 
 ## Managing Credentials
 
-All credentials are stored in `srcs/.env` file. Default values:
-
 **⚠️ Security Requirement**: Credentials were **not** stored in the repository during delivery. The `.env` file is excluded and must be added manually.
 
 ### Setup
