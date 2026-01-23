@@ -65,7 +65,7 @@ make restart
 
 ### Setup
 
-1. Create or your add the environment file:
+1. Create or your add the environment file
 
 2. On the public github repository the environment file is already present at the rooot and you can edit it, mantaining the info template.
 
