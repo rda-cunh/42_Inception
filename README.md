@@ -55,9 +55,9 @@ This project uses Docker containerization to isolate services, ensuring consiste
 **Key Design Choices:**
 - **Base Image**: Debian (penultimate stable version: bookworm) chosen for stability, extensive package ecosystem, and production-readiness
 - **Network**: Bridge network (`all`) enables container-to-container communication while maintaining isolation
-- **Entry Point**: NGINX container exclusively handles external traffic on port 443 with TLS 1.2/1.3
+- **Entry Point**: NGINX container exclusively handles external traffic on port 443 with TLS 1.2
 - **Persistence**: Named volumes with bind mounts to `~/data/` for easy backup and access
-- **Configuration**: Environment variables stored in `.env` file (no hardcoded credentials)
+- **Configuration**: Environment variables stored in `.env` file 
 
 ### Virtual Machines vs Docker
 
