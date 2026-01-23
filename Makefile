@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: rda-cunh <rda-cunh@student.42porto.com>    +#+  +:+       +#+         #
+#    By: rda-cunh <rda-cunh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/20 19:38:56 by rda-cunh          #+#    #+#              #
-#    Updated: 2026/01/23 00:42:27 by rda-cunh         ###   ########.fr        #
+#    Updated: 2026/01/23 20:19:21 by rda-cunh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,8 +54,8 @@ restart: down up
 
 # create data directories for persistent volumes
 create_dirs:
-	@mkdir -p $(DATA_PATH)/database
-	@mkdir -p $(DATA_PATH)/wordpress_files
+	@mkdir -p ~/data/database
+	@mkdir -p ~/data/wordpress_files
 	@echo "✓ Data directories created"
 
 # add domain to /etc/hosts if not already present
