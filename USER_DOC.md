@@ -59,6 +59,20 @@ make restart
 - **URL**: `https://rda-cunh.42.fr/wp-admin`
 - **Login**: Use administrator credentials (see below)
 
+## Managing Credentials
+
+All credentials are stored in `srcs/.env` file. Default values:
+
+**⚠️ Security Requirement**: Credentials were **not** stored in the repository during delivery. The `.env` file is excluded and must be added manually.
+
+### Setup
+
+1. Create or your add the environment file:
+   ```bash
+   cp srcs/.env.template srcs/.env
+
+2. On the public github repository the environment file is already present at the rooot and you can edit it, mantaining the info template.
+
 ## Checking Service Status
 
 ### Quick Status Check
