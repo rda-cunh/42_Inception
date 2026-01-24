@@ -24,7 +24,7 @@ This guide explains how to set up, build, and modify the Inception infrastructur
 
    # Install Make
    sudo apt install -y make
-   ```
+
    # Optional GUI - openbox, xinit, kitty, firefox-esr for browser testing
    sudo apt-get install git wget zsh vim make openbox xinit kitty firefox-esr filezilla -y
    ```
