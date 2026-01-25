@@ -6,7 +6,7 @@
 #    By: rda-cunh <rda-cunh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/20 19:38:56 by rda-cunh          #+#    #+#              #
-#    Updated: 2026/01/25 12:26:47 by rda-cunh         ###   ########.fr        #
+#    Updated: 2026/01/25 12:31:20 by rda-cunh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,6 @@ NAME		= inception
 SRCS		= ./srcs
 COMPOSE		= $(SRCS)/docker-compose.yml
 HOST_URL	= rda-cunh.42.fr
-DATA_PATH   = ~/data
 
 
 # **************************************************************************** #
